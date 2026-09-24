@@ -44,6 +44,11 @@ const getRoute = async (mintAddr1: string, mintAddr2: string, amountIn: number) 
         data1 = result.quote1;
         data2 = result.quote2;
     } catch (error) {
+        // The lite endpoint is tried first and anything at all sends us here,
+        // including a bug in the parsing below rather than a problem with the
+        // endpoint. Say what went wrong before retrying: when the second call
+        // also fails, only its error survives, and the two are often unrelated.
+        console.warn("lite quote failed, falling back to the main endpoint:", error);
         const result = await getJupiterQuote(SWAP_QUOTE_BASE_URL, mintAddr1, mintAddr2, amountIn);
         data1 = result.quote1;
         data2 = result.quote2;
