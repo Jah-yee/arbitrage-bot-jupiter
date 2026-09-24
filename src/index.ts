@@ -34,7 +34,6 @@ let initialBalance = 0;
 
 const getRoute = async (mintAddr1: string, mintAddr2: string, amountIn: number) => {
     const userAta = getAssociatedTokenAddressSync(new PublicKey(mintAddr1), payer.publicKey)
-    const beforeBalance = await connection.getTokenAccountBalance(userAta)
 
     let data1;
     let data2;
@@ -57,6 +56,11 @@ const getRoute = async (mintAddr1: string, mintAddr2: string, amountIn: number) 
         console.log("Running Transaction ... ");
     }
 
+    // Read after the quote, not before it. This is only used for the closing
+    // log, and the check above returns on most passes - at a 500ms interval
+    // that was thousands of RPC calls an hour whose result was thrown away,
+    // on the same connection the quote path needs to stay responsive.
+    const beforeBalance = await connection.getTokenAccountBalance(userAta)
 
     const { ix1, ix2 } = await fetchSwapInstructions(data1, data2, payer.publicKey.toBase58())
 
