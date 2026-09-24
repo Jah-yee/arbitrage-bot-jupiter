@@ -1,3 +1,3 @@
-export * from "./decode/parseSwapIx"
+export * from "./decode"
 export * from "./confirm"
 export * from "./getQuote"
