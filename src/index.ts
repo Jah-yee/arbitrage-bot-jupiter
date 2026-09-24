@@ -124,15 +124,22 @@ const getRoute = async (mintAddr1: string, mintAddr2: string, amountIn: number) 
 
 // getRoute(NATIVE_MINT.toBase58(), 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', 10_000_000);
 
+// The pair the loop trades. The baseline balance below and the route itself
+// have to be the same mint, or "Initial Balance Change" reports on a token the
+// bot is not trading - so they are named once here rather than at both sites.
+const BASE_MINT = STABLE_COIN.usdc;
+const TARGET_MINT = "CBdCxKo9QavR9hfShgpEBG3zekorAeD7W1jfq2o3pump";
+const AMOUNT_IN = 5_000_000;
+
 const start = async () => {
     console.log("Arbitrage Bot Addr : ", payer.publicKey.toBase58());
 
-    const userAta = getAssociatedTokenAddressSync(new PublicKey(STABLE_COIN.usdc), payer.publicKey)
+    const userAta = getAssociatedTokenAddressSync(new PublicKey(BASE_MINT), payer.publicKey)
     initialBalance = (await connection.getTokenAccountBalance(userAta)).value.uiAmount || 0
 
     while (1) {
         try {
-            await getRoute(STABLE_COIN.usdc, "CBdCxKo9QavR9hfShgpEBG3zekorAeD7W1jfq2o3pump", 5_000_000);
+            await getRoute(BASE_MINT, TARGET_MINT, AMOUNT_IN);
         } catch (error) {
             console.error(error);
         }
