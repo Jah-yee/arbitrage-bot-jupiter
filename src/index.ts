@@ -70,7 +70,12 @@ const getRoute = async (mintAddr1: string, mintAddr2: string, amountIn: number) 
             return createAssociatedTokenAccountIdempotentInstruction(payer.publicKey, ata, payer.publicKey, mint);
         });
 
+    // Everything the route touched gets closed to reclaim rent, except the mint
+    // we started from. That account holds the working capital and is where the
+    // before/after balances are read, so closing it makes the whole transaction
+    // fail on any round trip that actually came back with funds.
     const closeAta = uniqueTokens
+        .filter((ele : any) => ele !== mintAddr1)
         .map((ele : any) => {
             const mint = new PublicKey(ele);
             const ata = getAssociatedTokenAddressSync(mint, payer.publicKey);
