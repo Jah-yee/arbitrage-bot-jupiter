@@ -97,11 +97,18 @@ const getRoute = async (mintAddr1: string, mintAddr2: string, amountIn: number) 
     // Get latest blockhash
     const latestBlockhash = await connection.getLatestBlockhash();
 
-    // Load LUTs
+    // Load LUTs. getAddressLookupTable resolves with a null value when the
+    // table is not on chain yet - a fresh pool the RPC has not caught up with,
+    // or a node that is simply behind. Compiling with a null in this array
+    // silently drops the addresses it was meant to supply, and the message
+    // comes out referencing accounts that are no longer resolvable.
     const lookupTableAccounts: AddressLookupTableAccount[] = await Promise.all(
         uniqueLUT.map(async (lut : any) => {
             const res = await connection.getAddressLookupTable(new PublicKey(lut));
-            return res.value as AddressLookupTableAccount;
+            if (!res.value) {
+                throw new Error(`Address lookup table ${lut} could not be loaded`);
+            }
+            return res.value;
         })
     );
 
